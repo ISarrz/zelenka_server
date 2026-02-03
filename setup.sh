@@ -8,4 +8,6 @@ apt-get dist-upgrade -y
 apt-get autoremove -y
 apt-get autoclean -y
 
+apt install git -y
+git clone
 echo "--- Обновление завершено успешно! ---"
