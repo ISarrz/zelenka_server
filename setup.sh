@@ -9,5 +9,7 @@ apt-get autoremove -y
 apt-get autoclean -y
 
 apt install git -y
-git clone
+git clone https://github.com/ISarrz/zelenka_server.git
+git checkout server
+
 echo "--- Обновление завершено успешно! ---"
