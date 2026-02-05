@@ -21,7 +21,7 @@ set -euo pipefail
 
 FILE="/etc/apt/sources.list.d/mysql.list"
 
-sudo tee "$FILE" > /dev/null <<'EOF'
+tee "$FILE" > /dev/null <<'EOF'
 deb [signed-by=/usr/share/keyrings/mysql-archive-keyring.gpg] http://repo.mysql.com/apt/debian/ bookworm mysql-8.0
 deb-src [signed-by=/usr/share/keyrings/mysql-archive-keyring.gpg] http://repo.mysql.com/apt/debian/ bookworm mysql-8.0
 EOF
@@ -33,13 +33,12 @@ set -euo pipefail
 read -rsp "Введите пароль для MySQL root: " MYSQL_ROOT_PASSWORD
 echo
 
-sudo debconf-set-selections <<EOF
+debconf-set-selections <<EOF
 mysql-community-server mysql-community-server/root-pass password $MYSQL_ROOT_PASSWORD
 mysql-community-server mysql-community-server/re-root-pass password $MYSQL_ROOT_PASSWORD
 EOF
 
-
-sudo DEBIAN_FRONTEND=noninteractive apt -y install mysql-community-server
+DEBIAN_FRONTEND=noninteractive apt -y install mysql-community-server
 
 #apt -y install mysql-server
 
