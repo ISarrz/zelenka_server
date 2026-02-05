@@ -10,7 +10,7 @@ apt-get autoclean -y
 
 apt update
 apt -y install wget
-apt install gnupg
+apt -y install gnupg
 
 wget https://dev.mysql.com/get/mysql-apt-config_0.8.29-1_all.deb
 dpkg -i mysql-apt-config_0.8.29-1_all.deb
