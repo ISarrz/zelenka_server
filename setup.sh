@@ -27,7 +27,6 @@ deb-src [signed-by=/usr/share/keyrings/mysql-archive-keyring.gpg] http://repo.my
 EOF
 
 apt update
-!/usr/bin/env bash
 set -euo pipefail
 
 read -rsp "Введите пароль для MySQL root: " MYSQL_ROOT_PASSWORD
