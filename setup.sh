@@ -15,7 +15,7 @@ apt-get autoremove -y
 apt-get autoclean -y
 
 apt update
-apt -y install wget gnupg git tmux
+apt -y install wget gnupg git tmux cmake
 
 wget https://dev.mysql.com/get/mysql-apt-config_0.8.29-1_all.deb
 dpkg -i mysql-apt-config_0.8.29-1_all.deb
