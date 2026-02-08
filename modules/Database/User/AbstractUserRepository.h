@@ -7,9 +7,14 @@ class AbstractUserRepository {
     virtual ~AbstractUserRepository() = default;
 
     virtual std::optional<User> getById(size_t id) = 0;
-    virtual std::optional<User> getByLogin(const std::string& login) = 0;
-    virtual std::optional<User> getByEmail(const std::string& email) = 0;
+    virtual std::optional<User> getByLogin(const std::string &login) = 0;
+    virtual std::optional<User> getByEmail(const std::string &email) = 0;
+    virtual std::optional<std::vector<User>> getAll() = 0;
 
-    private:
+    virtual void insert(std::string login, std::string email,
+                        std::string password) = 0;
 
+    virtual void remove(User &user) = 0;
+
+  private:
 };
