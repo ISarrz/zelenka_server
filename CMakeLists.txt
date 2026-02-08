@@ -1,10 +1,16 @@
 cmake_minimum_required(VERSION 3.25)
+
+
 project(zelenka_server)
 
 set(CMAKE_CXX_STANDARD 20)
 
 # Добавляем путь, который нашел find
 include_directories(/usr/include/mysql-cppconn)
+include_directories(/usr/include/jdbc)
+
+# Или, если папки jdbc нет физически, можно сделать обходной путь (хак):
+#include_directories(/usr/include)
 
 add_executable(zelenka_server scripts/main.cpp
         modules/Config/Config.cpp

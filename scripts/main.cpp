@@ -1,11 +1,6 @@
 #include "../modules/Config/Config.h"
-#include "../modules/Database/Database.h"
-#include "../modules/Database/User/UserRepository.h"
 #include "../modules/Server/Server.h"
 #include <iostream>
-#include <jdbc/cppconn/prepared_statement.h>
-#include <jdbc/mysql_connection.h>
-#include <jdbc/mysql_driver.h>
 #include <memory>
 
 void ShowHelp(const std::string &exeName) {
