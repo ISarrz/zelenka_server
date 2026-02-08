@@ -1,3 +1,5 @@
+#!/bin/bash
+
 read -rsp "Введите пароль для MySQL root: " MYSQL_ROOT_PASSWORD
 echo
 read -rsp "Введите ваш GitHub Token: " GITHUB_TOKEN
@@ -13,7 +15,7 @@ apt-get autoremove -y
 apt-get autoclean -y
 
 apt update
-apt -y install wget gnupg git
+apt -y install wget gnupg git tmux
 
 wget https://dev.mysql.com/get/mysql-apt-config_0.8.29-1_all.deb
 dpkg -i mysql-apt-config_0.8.29-1_all.deb
@@ -41,4 +43,4 @@ git clone "https://${GITHUB_TOKEN}@github.com/ISarrz/zelenka_server.git"
 cd zelenka_server
 git checkout server
 
-echo "--- Обновление и клонирование завершено успешно! ---"
+echo "--- Обновление, установка tmux и клонирование завершено успешно! ---"
