@@ -6,9 +6,15 @@ project(zelenka_server)
 set(CMAKE_CXX_STANDARD 20)
 
 # Добавляем путь, который нашел find
-include_directories(/usr/include/mysql-cppconn)
 include_directories(/usr/include/jdbc)
+include_directories(/usr/include/mysql-cppconn)
 
+# Поиск nlohmann_json
+find_package(nlohmann_json QUIET)
+if(NOT nlohmann_json_FOUND)
+    # Если пакет не найден (как в старых Debian), просто ищем заголовки
+    include_directories(/usr/include/nlohmann)
+endif()
 # Или, если папки jdbc нет физически, можно сделать обходной путь (хак):
 #include_directories(/usr/include)
 

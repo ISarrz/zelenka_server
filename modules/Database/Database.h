@@ -1,9 +1,9 @@
 #pragma once
 #include "Database.h"
-#include <iostream>
-#include <jdbc/cppconn/prepared_statement.h>
-#include <jdbc/mysql_connection.h>
-#include <jdbc/mysql_driver.h>
+#include <cppconn/prepared_statement.h>
+#include <mysql_connection.h>
+#include <mysql_driver.h>
+#include <nlohmann/json.hpp>
 #include <memory>
 
 class Database {
