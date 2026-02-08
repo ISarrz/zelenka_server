@@ -14,7 +14,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
 apt-get upgrade -y
 # Устанавливаем всё необходимое для сборки C++ и работы сервера
-apt-get install -y wget gnupg git tmux cmake build-essential libmysqlcppconn-dev awscli
+apt-get install -y wget gnupg git tmux cmake build-essential libmysqlcppconn-dev awscli nlohmann-json3-dev
 
 echo "--- 2. Настройка репозитория MySQL 8.0 ---"
 # Скачиваем конфиг (версия 0.8.29 актуальна для Bookworm)
