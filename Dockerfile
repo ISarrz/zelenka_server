@@ -7,7 +7,9 @@ FROM debian:bookworm
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
+    git \
     libmysqlcppconn-dev \
+    clang \
     nlohmann-json3-dev \
     && rm -rf /var/lib/apt/lists/*
 
@@ -18,9 +20,9 @@ WORKDIR /app
 COPY . .
 
 # 5. Собираем проект так же, как ты делал это вручную
-RUN mkdir -p build && cd build && \
-    cmake .. && \
-    make
+# RUN mkdir -p build && cd build && \
+#     cmake .. && \
+#     make
 
 # 6. Запуск сервера
-CMD ["./build/zelenka_server"]
+# CMD ["./build/zelenka_server"]
