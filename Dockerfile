@@ -10,7 +10,10 @@ RUN apt-get update && apt-get install -y \
     git \
     libmysqlcppconn-dev \
     clang \
+    iputils-ping \
     nlohmann-json3-dev \
+    gdb \
+    docker-compose \
     && rm -rf /var/lib/apt/lists/*
 
 # 3. Указываем рабочую директорию

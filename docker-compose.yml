@@ -1,0 +1,36 @@
+services:
+  # Сервис базы данных
+  db:
+    image: mysql:8.0
+    restart: always
+    # Используем переменные из .env для настройки самой MySQL
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  # Сервис твоего сервера
+  app:
+    build: .
+    volumes:
+      - .:/workspaces/zelenka_server
+    depends_on:
+      - db
+    # Пробрасываем все переменные из .env внутрь вашего C++ приложения
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db # Оставляем только хост, так как он специфичен для Docker-сети
+    ports:
+      - "8080:8080"
+      
+    tty: true
+    stdin_open: true
+
+volumes:
+  db_data:

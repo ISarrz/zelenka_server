@@ -11,17 +11,23 @@
 #include <sstream>
 #include <string>
 
-Database::Database() {
+Database::Database()
+{
     driver_ = sql::mysql::get_mysql_driver_instance();
 
-    connection_.reset(driver_->connect("tcp://127.0.0.1:3306",
+    const char *env_host = std::getenv("DB_HOST");
+    std::string host = env_host ? env_host : "127.0.0.1";
+
+    std::string url = "tcp://" + host + ":3306";
+
+    connection_.reset(driver_->connect(host,
                                        config::database_username,
                                        config::database_password));
     sql::Statement *stmt = connection_->createStatement();
 
-    stmt->execute("CREATE DATABASE IF NOT EXISTS zelenka");
+    // stmt->execute("CREATE DATABASE IF NOT EXISTS zelenka");
 
-    connection_->setSchema("zelenka");
+    connection_->setSchema(std::getenv("DB_NAME"));
 
     stmt->execute("CREATE TABLE IF NOT EXISTS users ("
                   "id INT AUTO_INCREMENT PRIMARY KEY,"
@@ -34,14 +40,14 @@ Database::Database() {
                   "serial_number VARCHAR(100) UNIQUE NOT NULL)");
 
     stmt->execute(
-            "CREATE TABLE IF NOT EXISTS user_devices ("
-            "id INT AUTO_INCREMENT PRIMARY KEY,"
-            "name VARCHAR(100),"
-            "user_id INT,"
-            "device_id INT,"
-            "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,"
-            "FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE "
-            "CASCADE)");
+        "CREATE TABLE IF NOT EXISTS user_devices ("
+        "id INT AUTO_INCREMENT PRIMARY KEY,"
+        "name VARCHAR(100),"
+        "user_id INT,"
+        "device_id INT,"
+        "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,"
+        "FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE "
+        "CASCADE)");
 
     stmt->execute("CREATE TABLE IF NOT EXISTS devices_readings ("
                   "id INT AUTO_INCREMENT PRIMARY KEY,"
@@ -59,11 +65,13 @@ Database::Database() {
 
 sql::Connection *Database::getConnection() const { return connection_.get(); }
 
-int Database::makeBackup() {
+int Database::makeBackup()
+{
     const std::string backup_dir = "./backups";
 
     // 1. Создаем директорию, если её нет
-    if (!std::filesystem::exists(backup_dir)) {
+    if (!std::filesystem::exists(backup_dir))
+    {
         std::filesystem::create_directories(backup_dir);
     }
 
@@ -81,10 +89,12 @@ int Database::makeBackup() {
     // 3. Формируем команду дампа.
     // Используем MYSQL_PWD, чтобы избежать Warning о небезопасности.
     std::string dump_cmd = "MYSQL_PWD='" + config::database_password + "' "
-                           "mysqldump -u " + config::database_username + " " +
+                                                                       "mysqldump -u " +
+                           config::database_username + " " +
                            "zelenka" + " > " + full_path;
 
-    if (std::system(dump_cmd.c_str()) != 0) {
+    if (std::system(dump_cmd.c_str()) != 0)
+    {
         std::cerr << "Ошибка: Не удалось создать дамп базы данных." << std::endl;
         return 1;
     }
@@ -100,14 +110,18 @@ int Database::makeBackup() {
     std::cout << "Загрузка в Yandex Object Storage..." << std::endl;
 
     // 5. Выполняем загрузку
-    if (std::system(upload_ss.str().c_str()) == 0) {
+    if (std::system(upload_ss.str().c_str()) == 0)
+    {
         std::cout << "Успешно загружено. Удаление локального файла..." << std::endl;
 
         // 6. Удаляем локальный файл только при успешной загрузке
         std::error_code ec;
-        if (std::filesystem::remove(full_path, ec)) {
+        if (std::filesystem::remove(full_path, ec))
+        {
             std::cout << "Локальный файл удален." << std::endl;
-        } else {
+        }
+        else
+        {
             std::cerr << "Предупреждение: Не удалось удалить файл: " << ec.message() << std::endl;
         }
         return 0;

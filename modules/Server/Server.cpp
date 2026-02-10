@@ -107,6 +107,10 @@ Server::Server() {
                  }
              });
 
-    std::cout << "Сервер запущен на http://0.0.0.0:8080" << std::endl;
-    svr.listen("0.0.0.0", 8080);
+    const int port = 8080; 
+    std::cout << "Сервер запущен на http://0.0.0.0:" << port << std::endl;
+    
+    if (!svr.listen("0.0.0.0", port)) {
+        std::cerr << "Не удалось запустить сервер на порту " << port << std::endl;
+    }
 }
