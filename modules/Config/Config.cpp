@@ -1,4 +1,4 @@
-#include "Config.h"
+#include "Config.hpp"
 #include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
@@ -12,4 +12,5 @@ void config::InitConfig(const std::filesystem::path &project_path)
     yandex_secret_key = std::getenv("YANDEX_SECRET_KEY");
     database_username = std::getenv("DB_USER");
     database_password = std::getenv("DB_PASSWORD");
+    secret_key = std::getenv("SECRET_KEY");
 }

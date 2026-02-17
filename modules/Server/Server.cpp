@@ -1,116 +1,27 @@
-#include "Server.h"
+#include "Server.hpp"
 
-#include "../Database/Database.h"
-#include "../Database/User/AbstractUserRepository.h"
-#include "../Database/User/User.h"
-#include "../Database/User/UserRepository.h"
+#include "Routes/Routes.hpp"
+#include "../Database/Database.hpp"
+#include "../Database/Device/DeviceRepository.hpp"
+#include "../Database/Device/DeviceMonitoringRepository.hpp"
 
 Server::Server() {
-    auto *database = new Database();
-    auto user_repo = UserRepository(database);
+  auto* database = new Database();
+  auto user_repo = UserRepository(database);
+  auto device_repo = DeviceRepository(database);
+  auto monitoring_repo = DeviceMonitoringRepository(database);
 
-    httplib::Server svr;
+  httplib::Server svr;
 
-    svr.Get("/hi", [](const httplib::Request &, httplib::Response &res) {
-        res.set_content("Hello World!", "text/plain");
-    });
+  Routes::RegisterGreetingRoute(svr);
+  Routes::RegisterUserRoutes(svr, user_repo);
+  Routes::RegisterSensorRoute(svr, device_repo, monitoring_repo);
+  Routes::RegisterAdminRoutes(svr, user_repo, device_repo);
 
-    svr.Post("/register", [](const httplib::Request &req,
-                             httplib::Response &res) {
-        try {
-            auto data = json::parse(req.body);
+  const int port = 8080;
+  std::cout << "Сервер запущен на http://0.0.0.0:" << port << std::endl;
 
-            std::string login = data.at("login");
-            std::string email = data.at("email");
-            std::string password = data.at("password");
-            std::cout << "Регистрация пользователя: " << login << std::endl;
-
-            if (login == "admin") {
-                json error_response;
-                error_response["message"] = "User already exists";
-
-                res.status = 409;
-                res.set_content(error_response.dump(), "application/json");
-                return;
-            }
-
-            json response_user;
-            response_user["id"] = 101;
-            response_user["login"] = login;
-            response_user["email"] = email;
-
-            res.status = 201;
-            res.set_content(response_user.dump(), "application/json");
-
-        } catch (const std::exception &e) {
-            std::cout << "error\n";
-            res.status = 400;
-            res.set_content("{\"error\":\"Invalid JSON\"}", "application/json");
-        }
-    });
-
-    svr.Post("/sensor_monitoring",
-             [](const httplib::Request &req, httplib::Response &res) {
-                 try {
-                     auto data = json::parse(req.body);
-                     int id = data.at("id");
-                     float temperature = data.at("temperature");
-                     float humidity = data.at("humidity");
-                     float hydration = data.at("hydration");
-                     float pressure = data.at("pressure");
-                     std::cout << "Данные получены:\n"
-                               << "ID: " << id << "\n"
-                               << "Температура " << temperature << "\n"
-                               << "Влажность воздуха: " << humidity << "\n"
-                               << "Влажность почвы: " << hydration << "\n"
-                               << "Давление: " << pressure << "\n\n";
-
-                     json response_user;
-
-                     res.status = 201;
-                     res.set_content(response_user.dump(), "application/json");
-
-                 } catch (const std::exception &e) {
-                     res.status = 400;
-                     std::cout << "error\n";
-                     std::cout << e.what() << "\n\n";
-                 }
-             });
-
-    svr.Post("/auth",
-             [&user_repo](const httplib::Request &req, httplib::Response &res) {
-                 try {
-                     auto data = json::parse(req.body);
-
-                     std::string info = data.at("info");
-                     std::string password = data.at("password");
-                     std::optional<User> user;
-                     json response;
-                     if (info.find('@') == std::string::npos) {
-                         user = user_repo.getByEmail(info);
-
-                     } else {
-                         user = user_repo.getByLogin(info);
-                     }
-                     if (user && user.value().password == password) {
-                         res.status = 200;
-                     } else {
-                         res.status = 401;
-                     }
-
-
-                 } catch (const std::exception &e) {
-                     // std::cout << "error\n";
-                     // res.status = 400;
-                     // res.set_content("{\"error\":\"Invalid JSON\"}",
-                     // "application/json");
-                 }
-             });
-
-    const int port = 8080; 
-    std::cout << "Сервер запущен на http://0.0.0.0:" << port << std::endl;
-    
-    if (!svr.listen("0.0.0.0", port)) {
-        std::cerr << "Не удалось запустить сервер на порту " << port << std::endl;
-    }
+  if (!svr.listen("0.0.0.0", port)) {
+    std::cerr << "Не удалось запустить сервер на порту " << port << std::endl;
+  }
 }

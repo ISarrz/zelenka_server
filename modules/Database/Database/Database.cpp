@@ -1,5 +1,5 @@
-#include "Database.h"
-#include "../Config/Config.h"
+#include "Database.hpp"
+#include "../../Config/Config.hpp"
 #include <chrono>
 #include <filesystem>
 #include <iomanip>
@@ -49,14 +49,14 @@ Database::Database()
         "FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE "
         "CASCADE)");
 
-    stmt->execute("CREATE TABLE IF NOT EXISTS devices_readings ("
+    stmt->execute("CREATE TABLE IF NOT EXISTS devices_monitorings ("
                   "id INT AUTO_INCREMENT PRIMARY KEY,"
                   "device_id INT,"
+                  "timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
                   "temperature DOUBLE DEFAULT 0,"
                   "humidity DOUBLE DEFAULT 0,"
                   "hydration DOUBLE DEFAULT 0,"
                   "pressure DOUBLE DEFAULT 0,"
-                  "timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
                   "FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE "
                   "CASCADE)");
 
