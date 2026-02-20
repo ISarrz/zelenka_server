@@ -8,7 +8,7 @@ using json = nlohmann::json;
 void Routes::RegisterSensorRoute(httplib::Server& svr,
                                  DeviceRepository& device_repo,
                                  DeviceMonitoringRepository& monitoring_repo) {
-    svr.Post("/device_monitoring", [&](const httplib::Request& req,
+    svr.Post("/device/insert-monitoring", [&](const httplib::Request& req,
                                        httplib::Response& res) {
         try {
             auto data = json::parse(req.body);

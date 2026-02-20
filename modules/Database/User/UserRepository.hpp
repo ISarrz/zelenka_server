@@ -27,6 +27,9 @@ class UserRepository : public AbstractUserRepository {
     std::vector<Device> getUserDevices(size_t user_id) override;
     std::vector<DeviceMonitoring> getUserDeviceMonitorings(
         size_t user_id) override;
+    bool insertUserDevice(size_t user_id, size_t device_id) override;
+    bool userDeviceExists(size_t user_id, size_t device_id) override;
+    bool removeUserDevice(size_t user_id, size_t device_id) override;
 
    private:
     static User Constructor(const sql::ResultSet* info);

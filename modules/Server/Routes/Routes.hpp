@@ -8,7 +8,7 @@
 class Routes {
  public:
   static void RegisterGreetingRoute(httplib::Server& svr);
-  static void RegisterUserRoutes(httplib::Server& svr, UserRepository& user_repo);
+  static void RegisterUserRoutes(httplib::Server& svr, UserRepository& user_repo, DeviceRepository& device_repo, DeviceMonitoringRepository& monitoring_repo);
   static void RegisterSensorRoute(httplib::Server& svr, DeviceRepository& device_repo, DeviceMonitoringRepository& monitoring_repo);
   static void RegisterAdminRoutes(httplib::Server& svr, UserRepository& user_repo, DeviceRepository& device_repo);
 };

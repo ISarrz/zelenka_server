@@ -14,11 +14,11 @@ Server::Server() {
   httplib::Server svr;
 
   Routes::RegisterGreetingRoute(svr);
-  Routes::RegisterUserRoutes(svr, user_repo);
+  Routes::RegisterUserRoutes(svr, user_repo, device_repo, monitoring_repo);
   Routes::RegisterSensorRoute(svr, device_repo, monitoring_repo);
   Routes::RegisterAdminRoutes(svr, user_repo, device_repo);
 
-  const int port = 8080;
+  const int port = 80;
   std::cout << "Сервер запущен на http://0.0.0.0:" << port << std::endl;
 
   if (!svr.listen("0.0.0.0", port)) {

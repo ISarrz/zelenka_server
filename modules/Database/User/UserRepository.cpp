@@ -201,3 +201,48 @@ std::vector<DeviceMonitoring> UserRepository::getUserDeviceMonitorings(
 
     return monitorings;
 }
+
+bool UserRepository::userDeviceExists(size_t user_id, size_t device_id) {
+    try {
+        std::unique_ptr<sql::PreparedStatement> stmt(
+            database_->getConnection()->prepareStatement(
+                "SELECT 1 FROM user_devices WHERE user_id = ? AND device_id = ?"));
+        stmt->setInt(1, static_cast<int>(user_id));
+        stmt->setInt(2, static_cast<int>(device_id));
+        std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
+
+        return res->next();
+    } catch (const std::exception& e) {
+        return false;
+    }
+}
+
+bool UserRepository::insertUserDevice(size_t user_id, size_t device_id) {
+    try {
+        std::unique_ptr<sql::PreparedStatement> stmt(
+            database_->getConnection()->prepareStatement(
+                "INSERT INTO user_devices (user_id, device_id) VALUES (?, ?)"));
+        stmt->setInt(1, static_cast<int>(user_id));
+        stmt->setInt(2, static_cast<int>(device_id));
+        stmt->executeUpdate();
+
+        return true;
+    } catch (const std::exception& e) {
+        return false;
+    }
+}
+
+bool UserRepository::removeUserDevice(size_t user_id, size_t device_id) {
+    try {
+        std::unique_ptr<sql::PreparedStatement> stmt(
+            database_->getConnection()->prepareStatement(
+                "DELETE FROM user_devices WHERE user_id = ? AND device_id = ?"));
+        stmt->setInt(1, static_cast<int>(user_id));
+        stmt->setInt(2, static_cast<int>(device_id));
+
+        int rows_affected = stmt->executeUpdate();
+        return rows_affected > 0;
+    } catch (const std::exception& e) {
+        return false;
+    }
+}

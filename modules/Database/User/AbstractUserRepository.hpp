@@ -26,6 +26,9 @@ class AbstractUserRepository {
     virtual std::vector<Device> getUserDevices(size_t user_id) = 0;
     virtual std::vector<DeviceMonitoring> getUserDeviceMonitorings(
         size_t user_id) = 0;
+    virtual bool insertUserDevice(size_t user_id, size_t device_id) = 0;
+    virtual bool userDeviceExists(size_t user_id, size_t device_id) = 0;
+    virtual bool removeUserDevice(size_t user_id, size_t device_id) = 0;
 
    private:
 };

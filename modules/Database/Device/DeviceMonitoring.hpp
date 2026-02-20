@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef>
+#include <nlohmann/json.hpp>
 #include <string>
 
 class DeviceMonitoring {
@@ -12,3 +13,5 @@ class DeviceMonitoring {
     float hydration;
     float pressure;
 };
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DeviceMonitoring, id, device_id, timestamp, temperature, humidity, hydration, pressure)

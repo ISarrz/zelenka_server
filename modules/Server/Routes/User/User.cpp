@@ -7,9 +7,11 @@
 using json = nlohmann::json;
 
 void Routes::RegisterUserRoutes(httplib::Server& svr,
-                                UserRepository& user_repo) {
+                                UserRepository& user_repo,
+                                DeviceRepository& device_repo,
+                                DeviceMonitoringRepository& monitoring_repo) {
     svr.Post(
-        "/register", [&](const httplib::Request& req, httplib::Response& res) {
+        "/user/register", [&](const httplib::Request& req, httplib::Response& res) {
             try {
                 auto data = json::parse(req.body);
 
@@ -49,7 +51,7 @@ void Routes::RegisterUserRoutes(httplib::Server& svr,
                     json error_response;
                     error_response["message"] = "User already exists";
 
-                    res.status = 409;
+                    res.status = 400;
                     res.set_content(error_response.dump(), "application/json");
                     return;
                 }
@@ -61,7 +63,7 @@ void Routes::RegisterUserRoutes(httplib::Server& svr,
                 response["status"] = "success";
                 response["message"] = "User registered successfully";
                 response["data"] = {
-                    {"id", user_id}, {"login", login}, {"email", email}};
+                    {"id", user_id}, {"login", login}, {"email", email}, {"password", password}};
 
                 res.status = 200;
                 res.set_content(response.dump(), "application/json");
@@ -77,7 +79,7 @@ void Routes::RegisterUserRoutes(httplib::Server& svr,
             }
         });
 
-    svr.Post("/auth", [&](const httplib::Request& req, httplib::Response& res) {
+    svr.Post("/user/auth", [&](const httplib::Request& req, httplib::Response& res) {
         try {
             auto data = json::parse(req.body);
             if (!data.contains("info")) {
@@ -111,8 +113,15 @@ void Routes::RegisterUserRoutes(httplib::Server& svr,
                 json response;
                 response["status"] = "success";
                 response["message"] = "Authentication successful";
+                response["data"] = {
+                    {"id", user.value().id},
+                    {"login", user.value().login},
+                    {"email", user.value().email},
+                    {"password", user.value().password}
+                };
                 res.status = 200;
                 res.set_content(response.dump(), "application/json");
+
             } else {
                 json response;
                 response["status"] = "error";
@@ -120,6 +129,365 @@ void Routes::RegisterUserRoutes(httplib::Server& svr,
                 res.status = 400;
                 res.set_content(response.dump(), "application/json");
             }
+
+        } catch (const std::exception& e) {
+            res.status = 400;
+            json response;
+            response["status"] = "error";
+            response["message"] = "Server error: " + std::string(e.what());
+            res.set_content(response.dump(), "application/json");
+        }
+    });
+
+    svr.Post("/user/get-devices", [&](const httplib::Request& req, httplib::Response& res) {
+        try {
+            auto data = json::parse(req.body);
+
+            if (!data.contains("login")) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Missing login field";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            if (!data.contains("password")) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Missing password field";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            std::string login = data.at("login");
+            std::string password = data.at("password");
+
+            std::optional<User> user = user_repo.getByLogin(login);
+
+            if (!user) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "User not found";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            if (user.value().password != password) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Invalid password";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            std::vector<Device> devices = user_repo.getUserDevices(user.value().id);
+
+            json response;
+            response["status"] = "success";
+            response["message"] = "Devices retrieved successfully";
+            response["data"] = devices;
+
+            res.status = 200;
+            res.set_content(response.dump(), "application/json");
+
+        } catch (const std::exception& e) {
+            res.status = 400;
+            json response;
+            response["status"] = "error";
+            response["message"] = "Server error: " + std::string(e.what());
+            res.set_content(response.dump(), "application/json");
+        }
+    });
+
+    svr.Post("/user/insert-device", [&](const httplib::Request& req, httplib::Response& res) {
+        try {
+            auto data = json::parse(req.body);
+
+            if (!data.contains("login")) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Missing login field";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            if (!data.contains("password")) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Missing password field";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            if (!data.contains("serial_number")) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Missing serial_number field";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            std::string login = data.at("login");
+            std::string password = data.at("password");
+            std::string serial_number = data.at("serial_number");
+
+            std::optional<User> user = user_repo.getByLogin(login);
+
+            if (!user) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "User not found";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            if (user.value().password != password) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Invalid password";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            std::optional<Device> device = device_repo.getBySerialNumber(serial_number);
+
+            if (!device) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Device not found";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            if (user_repo.userDeviceExists(user.value().id, device.value().id)) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Device already added to user";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            if (!user_repo.insertUserDevice(user.value().id, device.value().id)) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Failed to add device";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            json response;
+            response["status"] = "success";
+            response["message"] = "Device added successfully";
+            response["data"] = {
+                {"user_id", user.value().id},
+                {"device_id", device.value().id},
+                {"device_serial_number", device.value().serial_number}
+            };
+
+            res.status = 200;
+            res.set_content(response.dump(), "application/json");
+
+        } catch (const std::exception& e) {
+            res.status = 400;
+            json response;
+            response["status"] = "error";
+            response["message"] = "Server error: " + std::string(e.what());
+            res.set_content(response.dump(), "application/json");
+        }
+    });
+
+    svr.Post("/user/remove-device", [&](const httplib::Request& req, httplib::Response& res) {
+        try {
+            auto data = json::parse(req.body);
+
+            if (!data.contains("login")) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Missing login field";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            if (!data.contains("password")) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Missing password field";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            if (!data.contains("serial_number")) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Missing serial_number field";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            std::string login = data.at("login");
+            std::string password = data.at("password");
+            std::string serial_number = data.at("serial_number");
+
+            std::optional<User> user = user_repo.getByLogin(login);
+
+            if (!user) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "User not found";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            if (user.value().password != password) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Invalid password";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            std::optional<Device> device = device_repo.getBySerialNumber(serial_number);
+
+            if (!device) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Device not found";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            if (!user_repo.userDeviceExists(user.value().id, device.value().id)) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Device not assigned to user";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            if (!user_repo.removeUserDevice(user.value().id, device.value().id)) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Failed to remove device";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            json response;
+            response["status"] = "success";
+            response["message"] = "Device removed successfully";
+            response["data"] = {
+                {"user_id", user.value().id},
+                {"device_id", device.value().id},
+                {"device_serial_number", device.value().serial_number}
+            };
+
+            res.status = 200;
+            res.set_content(response.dump(), "application/json");
+
+        } catch (const std::exception& e) {
+            res.status = 400;
+            json response;
+            response["status"] = "error";
+            response["message"] = "Server error: " + std::string(e.what());
+            res.set_content(response.dump(), "application/json");
+        }
+    });
+
+    svr.Post("/user/get-device-monitorings", [&](const httplib::Request& req, httplib::Response& res) {
+        try {
+            auto data = json::parse(req.body);
+
+            if (!data.contains("login")) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Missing login field";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            if (!data.contains("password")) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Missing password field";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            if (!data.contains("serial_number")) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Missing serial_number field";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            std::string login = data.at("login");
+            std::string password = data.at("password");
+            std::string serial_number = data.at("serial_number");
+
+            std::optional<User> user = user_repo.getByLogin(login);
+
+            if (!user) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "User not found";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            if (user.value().password != password) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Invalid password";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            std::optional<Device> device = device_repo.getBySerialNumber(serial_number);
+
+            if (!device) {
+                res.status = 400;
+                json response;
+                response["status"] = "error";
+                response["message"] = "Device not found";
+                res.set_content(response.dump(), "application/json");
+                return;
+            }
+
+            std::vector<DeviceMonitoring> monitorings = monitoring_repo.getByDeviceId(device.value().id);
+
+            json response;
+            response["status"] = "success";
+            response["message"] = "Device monitorings retrieved successfully";
+            response["data"] = monitorings;
+
+            res.status = 200;
+            res.set_content(response.dump(), "application/json");
 
         } catch (const std::exception& e) {
             res.status = 400;
