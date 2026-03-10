@@ -61,9 +61,6 @@ Database::Database()
                   "FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE "
                   "CASCADE)");
 
-    stmt->execute("ALTER TABLE devices_monitorings "
-                  "ADD COLUMN IF NOT EXISTS light DOUBLE DEFAULT 0");
-
     delete stmt;
 }
 
