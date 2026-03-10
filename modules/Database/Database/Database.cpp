@@ -57,8 +57,12 @@ Database::Database()
                   "humidity DOUBLE DEFAULT 0,"
                   "hydration DOUBLE DEFAULT 0,"
                   "pressure DOUBLE DEFAULT 0,"
+                  "light DOUBLE DEFAULT 0,"
                   "FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE "
                   "CASCADE)");
+
+    stmt->execute("ALTER TABLE devices_monitorings "
+                  "ADD COLUMN IF NOT EXISTS light DOUBLE DEFAULT 0");
 
     delete stmt;
 }

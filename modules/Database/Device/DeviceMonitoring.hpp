@@ -12,6 +12,9 @@ class DeviceMonitoring {
     float humidity;
     float hydration;
     float pressure;
+    float light;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DeviceMonitoring, id, device_id, timestamp, temperature, humidity, hydration, pressure)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DeviceMonitoring, id, device_id, timestamp,
+                                   temperature, humidity, hydration, pressure,
+                                   light)

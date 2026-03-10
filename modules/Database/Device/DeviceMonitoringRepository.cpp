@@ -6,22 +6,35 @@
 
 int DeviceMonitoringRepository::insert(size_t device_id, double temperature,
                                        double humidity, double hydration,
-                                       double pressure) {
+                                       double pressure, double light) {
     try {
+        auto* connection = database_->getConnection();
         std::unique_ptr<sql::PreparedStatement> stmt(
-            database_->getConnection()->prepareStatement(
+            connection->prepareStatement(
                 "INSERT INTO devices_monitorings (device_id, temperature, "
                 "humidity, "
-                "hydration, pressure) VALUES (?, ?, ?, ?, ?)"));
+                "hydration, pressure, light) VALUES (?, ?, ?, ?, ?, ?)"));
+
         stmt->setInt(1, static_cast<int>(device_id));
         stmt->setDouble(2, temperature);
         stmt->setDouble(3, humidity);
         stmt->setDouble(4, hydration);
         stmt->setDouble(5, pressure);
+        stmt->setDouble(6, light);
 
-        int result = stmt->executeUpdate();
+        stmt->executeUpdate();
 
-        return result;
+        // Получаем ID последней вставленной строки
+        std::unique_ptr<sql::Statement> stmt2(connection->createStatement());
+        std::unique_ptr<sql::ResultSet> res(
+            stmt2->executeQuery("SELECT LAST_INSERT_ID()"));
+        
+        if (res->next()) {
+            return res->getInt(1);
+        }
+
+        return -1;
+
     } catch (const std::exception& e) {
         return -1;
     }
@@ -107,6 +120,7 @@ DeviceMonitoring DeviceMonitoringRepository::Constructor(const sql::ResultSet* i
     monitoring.humidity = info->getDouble("humidity");
     monitoring.hydration = info->getDouble("hydration");
     monitoring.pressure = info->getDouble("pressure");
+    monitoring.light = info->getDouble("light");
 
     return monitoring;
 }

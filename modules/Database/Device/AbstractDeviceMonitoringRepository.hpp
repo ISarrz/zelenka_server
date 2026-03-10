@@ -9,7 +9,8 @@ class AbstractDeviceMonitoringRepository {
     virtual ~AbstractDeviceMonitoringRepository() = default;
 
     virtual int insert(size_t device_id, double temperature, double humidity,
-                       double hydration, double pressure) = 0;
+                       double hydration, double pressure,
+                       double light) = 0;
 
     virtual std::vector<DeviceMonitoring> getByDeviceId(size_t device_id) = 0;
     virtual std::vector<DeviceMonitoring> getByUserId(size_t user_id) = 0;

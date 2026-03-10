@@ -7,7 +7,7 @@ class DeviceMonitoringRepository : public AbstractDeviceMonitoringRepository {
     DeviceMonitoringRepository(Database* database) : database_(database) {}
 
     int insert(size_t device_id, double temperature, double humidity,
-               double hydration, double pressure) override;
+               double hydration, double pressure, double light) override;
 
     std::vector<DeviceMonitoring> getByDeviceId(size_t device_id) override;
     std::vector<DeviceMonitoring> getByUserId(size_t user_id) override;

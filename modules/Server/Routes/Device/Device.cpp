@@ -13,7 +13,7 @@ void Routes::RegisterSensorRoute(httplib::Server& svr,
         try {
             auto data = json::parse(req.body);
             for (auto field : {"serial_number", "temperature", "humidity",
-                               "hydration", "pressure"}) {
+                               "hydration", "pressure", "light"}) {
                 if (!data.contains(field)) {
                     res.status = 400;
                     json response;
@@ -30,6 +30,7 @@ void Routes::RegisterSensorRoute(httplib::Server& svr,
             float humidity = data.at("humidity");
             float hydration = data.at("hydration");
             float pressure = data.at("pressure");
+            float light = data.at("light");
 
             // Найти устройство по серийному номеру
             auto device = device_repo.getBySerialNumber(serial_number);
@@ -44,7 +45,8 @@ void Routes::RegisterSensorRoute(httplib::Server& svr,
 
             // Добавить данные мониторинга в БД
             int monitoring_id = monitoring_repo.insert(
-                device.value().id, temperature, humidity, hydration, pressure);
+                device.value().id, temperature, humidity, hydration, pressure,
+                light);
 
             std::cout << "Данные получены и сохранены на диск:\n"
                       << "Серийный номер: " << serial_number << "\n"
@@ -52,6 +54,7 @@ void Routes::RegisterSensorRoute(httplib::Server& svr,
                       << "Влажность воздуха: " << humidity << "\n"
                       << "Влажность почвы: " << hydration << "\n"
                       << "Давление: " << pressure << "\n"
+                      << "Освещенность: " << light << "\n"
                       << "ID записи мониторинга: " << monitoring_id << "\n\n";
 
             json response;

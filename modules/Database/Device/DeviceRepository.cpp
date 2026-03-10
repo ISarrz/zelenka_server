@@ -65,6 +65,7 @@ std::vector<Device> DeviceRepository::getAll() {
 
     return devices;
 }
+
 std::optional<Device> DeviceRepository::getById(size_t id) {
     try {
         std::unique_ptr<sql::PreparedStatement> stmt(
